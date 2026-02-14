@@ -1,0 +1,1010 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Plane, 
+  Wallet, 
+  MapPin, 
+  ShieldCheck, 
+  Calendar, 
+  Users, 
+  Sparkles, 
+  TrendingUp, 
+  ArrowRight, 
+  Menu, 
+  X,
+  CreditCard,
+  CheckCircle,
+  PiggyBank,
+  BrainCircuit,
+  Smartphone,
+  Database,
+  Lock,
+  Globe,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  HelpCircle,
+  ArrowUp
+} from 'lucide-react';
+
+// --- 辅助组件 ---
+
+// 计数动画
+const CountUp = ({ end, suffix = "", duration = 2000 }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      setCount(Math.floor(progress * end));
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }, [end, duration]);
+
+  return <span>{count}{suffix}</span>;
+};
+
+// 返回顶部按钮
+const BackToTop = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 300) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+    window.addEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  return (
+    <div className={`fixed bottom-8 right-8 z-50 transition-all duration-500 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+      <button 
+        onClick={scrollToTop}
+        className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg hover:shadow-blue-500/50 transition-all hover:scale-110 focus:outline-none"
+      >
+        <ArrowUp size={24} />
+      </button>
+    </div>
+  );
+};
+
+// 折叠面板组件 (Accordion)
+const AccordionItem = ({ question, answer, isOpen, onClick }) => {
+  return (
+    <div className="border-b border-gray-100 last:border-0">
+      <button 
+        className="w-full flex justify-between items-center py-5 text-left focus:outline-none group"
+        onClick={onClick}
+      >
+        <span className={`text-lg font-medium transition-colors ${isOpen ? 'text-blue-600' : 'text-gray-800 group-hover:text-blue-600'}`}>
+          {question}
+        </span>
+        <div className={`p-1 rounded-full transition-all ${isOpen ? 'bg-blue-100 rotate-180' : 'bg-gray-50'}`}>
+           <ChevronDown size={20} className={`${isOpen ? 'text-blue-600' : 'text-gray-400'}`} />
+        </div>
+      </button>
+      <div 
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 pb-5' : 'max-h-0 opacity-0'}`}
+      >
+        <p className="text-gray-600 leading-relaxed text-sm md:text-base">
+          {answer}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// --- 主要组件 ---
+
+const Navbar = ({ activeTab, setActiveTab }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const links = [
+    { name: '首页', id: 'home' },
+    { name: '智能规划', id: 'planner' },
+    { name: '核心技术', id: 'tech' },
+    { name: '关于团队', id: 'team' },
+  ];
+
+  return (
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab('home')}>
+            <div className="bg-gradient-to-tr from-blue-600 to-cyan-500 p-2 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <Plane className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className={`font-bold text-2xl tracking-tight leading-none transition-colors ${scrolled ? 'text-gray-900' : 'text-gray-800 md:text-white md:shadow-black/5'}`}>e路同行</span>
+              <span className={`text-[10px] font-medium tracking-widest uppercase mt-1 transition-colors ${scrolled ? 'text-blue-600' : 'text-blue-600 md:text-blue-100'}`}>Smart Travel</span>
+            </div>
+          </div>
+          
+          <div className="hidden md:flex space-x-1 bg-white/10 backdrop-blur-sm p-1 rounded-full">
+            {links.map((link) => (
+              <button
+                key={link.id}
+                onClick={() => setActiveTab(link.id)}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  activeTab === link.id 
+                    ? 'bg-white text-blue-700 shadow-md transform scale-105' 
+                    : scrolled ? 'text-gray-600 hover:text-blue-600 hover:bg-gray-50' : 'text-white/90 hover:text-white hover:bg-white/20'
+                }`}
+              >
+                {link.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="hidden md:flex items-center gap-4">
+             <button className={`font-medium text-sm transition-colors ${scrolled ? 'text-gray-500 hover:text-gray-900' : 'text-white/80 hover:text-white'}`}>登录</button>
+             <button className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-orange-500/30 transition-all hover:-translate-y-0.5 transform active:scale-95">
+               注册体验
+             </button>
+          </div>
+
+          <div className="md:hidden flex items-center">
+            <button onClick={() => setIsOpen(!isOpen)} className={`p-2 transition-colors ${scrolled ? 'text-gray-600' : 'text-white'}`}>
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`md:hidden absolute w-full bg-white border-b border-gray-100 shadow-xl transition-all duration-300 ease-in-out origin-top ${isOpen ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0 h-0 overflow-hidden'}`}>
+        <div className="px-4 pt-2 pb-6 space-y-1">
+          {links.map((link) => (
+            <button
+              key={link.id}
+              onClick={() => {
+                setActiveTab(link.id);
+                setIsOpen(false);
+              }}
+              className="block w-full text-left px-3 py-4 rounded-xl text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            >
+              {link.name}
+            </button>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+const HeroCarousel = ({ onStart }) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  const slides = [
+    {
+      image: "https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80",
+      title: "让每一笔预算更有价值",
+      subtitle: "金融+AI 一站式旅行规划智能平台",
+      align: "center"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+      title: "探索世界的无限可能",
+      subtitle: "AI 智能算法为您定制专属行程",
+      align: "left"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+      title: "安心出行，全程无忧",
+      subtitle: "智能资金监督与银行级安全保障",
+      align: "right"
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+
+  return (
+    <div className="relative h-screen w-full overflow-hidden">
+      {/* Slides */}
+      {slides.map((slide, index) => (
+        <div 
+          key={index}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+        >
+          <div className="absolute inset-0 bg-black/40 z-10"></div>
+          <img 
+            src={slide.image} 
+            alt={slide.title} 
+            className={`w-full h-full object-cover transition-transform duration-[10000ms] ease-linear ${index === currentSlide ? 'scale-110' : 'scale-100'}`} 
+          />
+          <div className={`absolute inset-0 z-20 flex items-center justify-center px-4`}>
+            <div className={`max-w-7xl w-full mx-auto text-white ${slide.align === 'left' ? 'text-left' : slide.align === 'right' ? 'text-right' : 'text-center'}`}>
+              <div className="space-y-6 animate-fade-in-up">
+                <div className={`inline-flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-white px-5 py-2 rounded-full text-sm font-semibold ${slide.align === 'center' ? 'mx-auto' : slide.align === 'right' ? 'ml-auto' : ''}`}>
+                  <Sparkles size={16} className="text-yellow-400" />
+                  <span>{slide.subtitle}</span>
+                </div>
+                <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight drop-shadow-lg">
+                  {slide.title}
+                </h1>
+                <p className="text-xl md:text-2xl text-blue-100 max-w-2xl font-light drop-shadow-md leading-relaxed mx-auto md:mx-0">
+                  {index === 0 && "结合中国工商银行金融服务，为您提供从预算增值到行程生成的全流程解决方案。"}
+                  {index === 1 && "告别繁琐攻略，输入预算和目的地，剩下的交给我们。"}
+                  {index === 2 && "实时监控消费，超支预警，让您的每一分钱都花在刀刃上。"}
+                </p>
+                <div className={`flex flex-col sm:flex-row gap-5 pt-4 ${slide.align === 'center' ? 'justify-center' : slide.align === 'right' ? 'justify-end' : 'justify-start'}`}>
+                  <button 
+                    onClick={onStart}
+                    className="group bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full text-lg font-bold transition-all shadow-lg hover:shadow-blue-500/50 hover:-translate-y-1 flex items-center justify-center gap-2"
+                  >
+                    立即规划行程 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                  <button className="group bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/50 text-white px-8 py-4 rounded-full text-lg font-bold transition-all flex items-center justify-center gap-2">
+                    <PiggyBank size={20} className="text-orange-400" />
+                    查看存款服务
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Controls */}
+      <button 
+        onClick={prevSlide}
+        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/30 backdrop-blur-md p-3 rounded-full text-white transition-all hover:scale-110"
+      >
+        <ChevronLeft size={32} />
+      </button>
+      <button 
+        onClick={nextSlide}
+        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/30 backdrop-blur-md p-3 rounded-full text-white transition-all hover:scale-110"
+      >
+        <ChevronRight size={32} />
+      </button>
+
+      {/* Dots */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+        {slides.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentSlide(idx)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${currentSlide === idx ? 'bg-white w-8' : 'bg-white/50 hover:bg-white/80'}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const MarketStats = () => (
+  <section className="py-20 bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-900 text-white relative overflow-hidden">
+    <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-blue-800/50">
+        <div className="p-6 group hover:bg-white/5 transition-colors rounded-2xl">
+          <div className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400 mb-2 group-hover:scale-110 transition-transform duration-300 inline-block">
+            <CountUp end={48} suffix=".9" />亿
+          </div>
+          <p className="text-blue-200 text-sm uppercase tracking-wider font-semibold mt-2">2023年国内出游人次</p>
+        </div>
+        <div className="p-6 group hover:bg-white/5 transition-colors rounded-2xl">
+          <div className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400 mb-2 group-hover:scale-110 transition-transform duration-300 inline-block">
+            <CountUp end={150} suffix="+" />
+          </div>
+          <p className="text-blue-200 text-sm uppercase tracking-wider font-semibold mt-2">覆盖全球热门目的地</p>
+        </div>
+        <div className="p-6 group hover:bg-white/5 transition-colors rounded-2xl">
+          <div className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-emerald-400 mb-2 group-hover:scale-110 transition-transform duration-300 inline-block">
+            <CountUp end={98} suffix="%" />
+          </div>
+          <p className="text-blue-200 text-sm uppercase tracking-wider font-semibold mt-2">用户预算控制满意度</p>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+const TechStack = () => {
+  const [activeTech, setActiveTech] = useState(0);
+  
+  const techs = [
+    {
+      title: "数据整合与管理",
+      icon: Database,
+      color: "bg-blue-100 text-blue-600",
+      desc: "利用大数据处理框架（Spark）清洗全球海量旅游与航班数据，构建分布式数据库，确保信息实时、准确。"
+    },
+    {
+      title: "AI 模型与算法",
+      icon: BrainCircuit,
+      color: "bg-purple-100 text-purple-600",
+      desc: "结合NLP自然语言处理理解您的需求，利用强化学习算法根据用户反馈不断优化推荐策略。"
+    },
+    {
+      title: "金融级安全防护",
+      icon: ShieldCheck,
+      color: "bg-green-100 text-green-600",
+      desc: "采用 SSL/TLS 加密传输，结合银行级多因素身份认证体系，保障每一笔支付与隐私数据的绝对安全。"
+    }
+  ];
+
+  return (
+    <section className="py-24 bg-gray-50 relative overflow-hidden">
+      {/* Background blobs */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">硬核技术驱动</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+            我们的平台构建在三层稳健的技术架构之上，确保每一次交互都流畅、智能且安全。
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            {techs.map((tech, index) => (
+              <div 
+                key={index}
+                onClick={() => setActiveTech(index)}
+                className={`p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2 group ${
+                  activeTech === index 
+                    ? 'bg-white shadow-xl border-blue-500 scale-105' 
+                    : 'bg-white/60 border-transparent hover:bg-white hover:border-gray-200 hover:shadow-md'
+                }`}
+              >
+                <div className="flex items-start gap-5">
+                  <div className={`mt-1 p-3 rounded-xl transition-transform group-hover:rotate-12 ${tech.color}`}>
+                    <tech.icon size={24} />
+                  </div>
+                  <div>
+                    <h3 className={`text-xl font-bold mb-2 ${activeTech === index ? 'text-gray-900' : 'text-gray-600 group-hover:text-gray-900'}`}>
+                      {tech.title}
+                    </h3>
+                    <p className={`leading-relaxed ${activeTech === index ? 'text-gray-600' : 'text-gray-400'}`}>
+                      {tech.desc}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="relative h-[460px] bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2.5rem] p-10 shadow-2xl text-white flex flex-col justify-center items-center overflow-hidden border border-slate-700">
+             {/* 动态可视化展示 */}
+             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] animate-pulse"></div>
+             
+             {/* Tech 0: Data */}
+             <div className={`transition-all duration-700 absolute inset-0 flex flex-col items-center justify-center p-8 ${activeTech === 0 ? 'scale-100 opacity-100 translate-y-0' : 'scale-90 opacity-0 translate-y-8'}`}>
+                <div className="relative mb-8">
+                  <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-40 rounded-full animate-pulse"></div>
+                  <Database size={100} className="text-blue-400 relative z-10 drop-shadow-lg" />
+                </div>
+                <h4 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-white">海量数据湖</h4>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-sm font-medium backdrop-blur-sm">Spark处理</span>
+                  <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-sm font-medium backdrop-blur-sm">实时抓取</span>
+                  <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-sm font-medium backdrop-blur-sm">分布式存储</span>
+                </div>
+             </div>
+
+             {/* Tech 1: AI */}
+             <div className={`transition-all duration-700 absolute inset-0 flex flex-col items-center justify-center p-8 ${activeTech === 1 ? 'scale-100 opacity-100 translate-y-0' : 'scale-90 opacity-0 translate-y-8'}`}>
+                <div className="relative mb-8">
+                  <div className="absolute inset-0 bg-purple-500 blur-2xl opacity-40 rounded-full animate-pulse"></div>
+                  <BrainCircuit size={100} className="text-purple-400 relative z-10 drop-shadow-lg" />
+                </div>
+                <h4 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-white">神经网络引擎</h4>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <span className="px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-sm font-medium backdrop-blur-sm">Transformer</span>
+                  <span className="px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-sm font-medium backdrop-blur-sm">NLP语义分析</span>
+                  <span className="px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-sm font-medium backdrop-blur-sm">强化学习</span>
+                </div>
+             </div>
+
+             {/* Tech 2: Security */}
+             <div className={`transition-all duration-700 absolute inset-0 flex flex-col items-center justify-center p-8 ${activeTech === 2 ? 'scale-100 opacity-100 translate-y-0' : 'scale-90 opacity-0 translate-y-8'}`}>
+                <div className="relative mb-8">
+                  <div className="absolute inset-0 bg-green-500 blur-2xl opacity-40 rounded-full animate-pulse"></div>
+                  <Lock size={100} className="text-green-400 relative z-10 drop-shadow-lg" />
+                </div>
+                <h4 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-white">银行级风控</h4>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <span className="px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-full text-sm font-medium backdrop-blur-sm">SSL/TLS</span>
+                  <span className="px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-full text-sm font-medium backdrop-blur-sm">生物识别</span>
+                  <span className="px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-full text-sm font-medium backdrop-blur-sm">实时反欺诈</span>
+                </div>
+             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Destinations = () => {
+  const places = [
+    { name: "三亚", tag: "海岛度假", price: "¥3,500起", img: "https://images.unsplash.com/photo-1540202404-a2f29016b523?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", desc: "阳光、沙滩与椰林，享受悠闲的海岛时光。" },
+    { name: "西安", tag: "历史文化", price: "¥2,200起", img: "https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", desc: "穿越千年古都，感受大唐盛世的繁华。" },
+    { name: "长沙", tag: "美食打卡", price: "¥1,800起", img: "https://images.unsplash.com/photo-1558258695-5853f65dfd3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", desc: "茶颜悦色与热辣湘菜，年轻人的不夜城。" }
+  ];
+
+  return (
+    <section className="py-24 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-end mb-12">
+          <div>
+            <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">热门目的地推荐</h2>
+            <p className="mt-4 text-xl text-gray-600">AI 根据本季性价比与气候大数据为您精选</p>
+          </div>
+          <button className="hidden md:flex bg-blue-50 text-blue-600 px-6 py-3 rounded-full font-semibold items-center gap-2 hover:bg-blue-100 hover:gap-3 transition-all">
+            查看更多 <ArrowRight size={18} />
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {places.map((place, idx) => (
+            <div key={idx} className="group relative rounded-3xl overflow-hidden aspect-[4/5] cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+              <img src={place.img} alt={place.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-8 flex flex-col justify-end">
+                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                  <span className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-xs font-bold px-3 py-1 rounded-full w-fit mb-3 block">{place.tag}</span>
+                  <h3 className="text-3xl font-bold text-white mb-2">{place.name}</h3>
+                  <p className="text-gray-300 text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 leading-relaxed">{place.desc}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-yellow-400 font-bold text-lg">{place.price}</p>
+                    <button className="bg-white text-gray-900 w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors">
+                      <ArrowRight size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const FAQ = () => {
+  const [openIndex, setOpenIndex] = useState(0);
+  
+  const faqs = [
+    {
+      q: "e路同行的存款服务是如何运作的？",
+      a: "用户在制定行程时，可将预算存入'e路同行'与银行合作的专属账户。这部分资金将作为定期存款享受高于普通活期的利率。行程开始时，系统会自动解冻资金用于支付。如果行程取消，资金可随时取出，利息按实际存款天数计算。"
+    },
+    {
+      q: "如果我在旅途中超支了怎么办？",
+      a: "我们的智能监督系统会实时监控您的消费。一旦接近预算警戒线，APP会推送提醒，并提供后续行程的省钱调整方案（如更换性价比更高的餐厅或交通方式）。"
+    },
+    {
+      q: "平台上生成的攻略可以自定义调整吗？",
+      a: "完全可以！AI生成的攻略只是初稿。您可以在此基础上拖拽调整景点顺序、更换酒店、增减游玩项目，系统会实时重新计算预算和路线。"
+    },
+    {
+      q: "我的个人隐私和支付安全如何保障？",
+      a: "我们采用银行级的数据加密技术（SSL/TLS），并与中国工商银行等金融机构直接对接支付接口。您的个人信息和资金流水数据都存储在加密的分布式数据库中，绝不向第三方出售。"
+    }
+  ];
+
+  return (
+    <section className="py-24 bg-blue-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">常见问题解答</h2>
+          <p className="mt-4 text-xl text-gray-600">了解更多关于 e路同行 的细节</p>
+        </div>
+        
+        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-blue-100">
+          {faqs.map((faq, index) => (
+            <AccordionItem 
+              key={index}
+              question={faq.q}
+              answer={faq.a}
+              isOpen={openIndex === index}
+              onClick={() => setOpenIndex(openIndex === index ? -1 : index)}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Planner = () => {
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    destination: '',
+    budget: '',
+    days: 3,
+    travelers: 1
+  });
+  const [result, setResult] = useState(null);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const generateItinerary = () => {
+    if (!formData.destination || !formData.budget) {
+      alert("请输入目的地和预算");
+      return;
+    }
+    setLoading(true);
+    
+    // 模拟AI生成过程
+    setTimeout(() => {
+      const budgetNum = parseInt(formData.budget);
+      const interestRate = 0.025; // 假设短期理财年化
+      const interest = (budgetNum * interestRate * (formData.days / 365)).toFixed(2);
+      
+      const transportCost = Math.floor(budgetNum * 0.3);
+      const hotelCost = Math.floor(budgetNum * 0.4);
+      const foodPlayCost = budgetNum - transportCost - hotelCost;
+
+      setResult({
+        ...formData,
+        interest,
+        breakdown: { transport: transportCost, hotel: hotelCost, other: foodPlayCost },
+        schedule: Array.from({ length: formData.days }, (_, i) => ({
+          day: i + 1,
+          morning: `游览${formData.destination}著名地标 A，打卡必去景点`,
+          afternoon: `体验当地特色文化活动，享用${formData.destination}特色下午茶`,
+          evening: `入住${formData.destination}精选酒店 (AI已比价)`
+        }))
+      });
+      setLoading(false);
+      setStep(2);
+    }, 2500);
+  };
+
+  const reset = () => {
+    setResult(null);
+    setStep(1);
+    setFormData({ destination: '', budget: '', days: 3, travelers: 1 });
+  };
+
+  return (
+    <div className="pt-24 pb-20 bg-gradient-to-b from-blue-50/50 to-white min-h-screen">
+      <div className="max-w-5xl mx-auto px-4">
+        <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/50 relative backdrop-blur-xl">
+          
+          {/* Decorative Background */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+          {/* Header */}
+          <div className="bg-white/80 backdrop-blur-sm px-8 py-8 md:px-12 border-b border-gray-100 relative z-10 flex justify-between items-end">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <BrainCircuit size={18} className="text-blue-600" />
+                <span className="text-blue-600 font-bold tracking-wider text-xs uppercase">AI Powered Planner</span>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900">智能行程定制</h2>
+            </div>
+            {step === 2 && (
+              <button onClick={reset} className="group text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1 transition-colors bg-gray-50 hover:bg-blue-50 px-4 py-2 rounded-full">
+                <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform"/> 重新规划
+              </button>
+            )}
+          </div>
+
+          <div className="p-8 md:p-12 relative z-10">
+            {loading ? (
+              <div className="text-center py-20">
+                <div className="relative w-28 h-28 mx-auto mb-8">
+                  <div className="absolute inset-0 border-8 border-gray-100 rounded-full"></div>
+                  <div className="absolute inset-0 border-8 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                  <div className="absolute inset-0 m-auto w-16 h-16 bg-white rounded-full shadow-inner flex items-center justify-center">
+                    <Sparkles className="text-blue-500 w-8 h-8 animate-pulse" />
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">AI 正在为您构建旅行图谱</h3>
+                <div className="space-y-2 text-gray-500 mt-4">
+                  <p className="animate-pulse">正在全网比价 {formData.destination} 的交通方案...</p>
+                  <p className="animate-pulse delay-75">正在计算“e路同行”专属存款收益...</p>
+                  <p className="animate-pulse delay-150">正在优化游玩路线...</p>
+                </div>
+              </div>
+            ) : step === 1 ? (
+              <div className="space-y-8 max-w-2xl mx-auto animate-fade-in-up">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-sm font-bold text-gray-900">目的地</label>
+                    <div className="relative group">
+                      <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors h-5 w-5" />
+                      <input
+                        type="text"
+                        name="destination"
+                        value={formData.destination}
+                        onChange={handleInputChange}
+                        placeholder="例如：成都"
+                        className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent hover:bg-white hover:border-gray-200 focus:border-blue-500 focus:bg-white rounded-2xl outline-none transition-all font-medium text-lg shadow-sm"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <label className="text-sm font-bold text-gray-900">总预算 (元)</label>
+                    <div className="relative group">
+                      <Wallet className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors h-5 w-5" />
+                      <input
+                        type="number"
+                        name="budget"
+                        value={formData.budget}
+                        onChange={handleInputChange}
+                        placeholder="例如：5000"
+                        className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent hover:bg-white hover:border-gray-200 focus:border-blue-500 focus:bg-white rounded-2xl outline-none transition-all font-medium text-lg shadow-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-sm font-bold text-gray-900">出行天数</label>
+                    <div className="relative group">
+                      <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors h-5 w-5" />
+                      <select
+                        name="days"
+                        value={formData.days}
+                        onChange={handleInputChange}
+                        className="w-full pl-14 pr-10 py-5 bg-gray-50 border-2 border-transparent hover:bg-white hover:border-gray-200 focus:border-blue-500 focus:bg-white rounded-2xl outline-none transition-all font-medium text-lg appearance-none cursor-pointer shadow-sm"
+                      >
+                        {[1,2,3,4,5,6,7,10,15].map(d => <option key={d} value={d}>{d} 天</option>)}
+                      </select>
+                      <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-sm font-bold text-gray-900">同行人数</label>
+                    <div className="relative group">
+                      <Users className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors h-5 w-5" />
+                      <select
+                        name="travelers"
+                        value={formData.travelers}
+                        onChange={handleInputChange}
+                        className="w-full pl-14 pr-10 py-5 bg-gray-50 border-2 border-transparent hover:bg-white hover:border-gray-200 focus:border-blue-500 focus:bg-white rounded-2xl outline-none transition-all font-medium text-lg appearance-none cursor-pointer shadow-sm"
+                      >
+                        {[1,2,3,4,5,6,8,10].map(p => <option key={p} value={p}>{p} 人</option>)}
+                      </select>
+                      <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-6 rounded-2xl border border-orange-200/50 flex items-start gap-5 shadow-sm">
+                  <div className="bg-orange-500 rounded-full p-2 mt-0.5 text-white shadow-md">
+                     <TrendingUp size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-base mb-1">金融增值提示</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      系统将自动为您的预算匹配"e路同行"专属短期存款产品。闲置资金不站岗，旅行途中也能赚取收益。
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={generateItinerary}
+                  className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white py-5 rounded-2xl font-bold text-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 mt-8 flex items-center justify-center gap-3 transform active:scale-95"
+                >
+                  <Sparkles className="text-yellow-400" />
+                  生成我的专属攻略
+                </button>
+              </div>
+            ) : (
+              <div className="animate-fade-in space-y-10">
+                {/* Result Header */}
+                <div className="bg-gray-900 text-white p-8 rounded-[2rem] shadow-2xl relative overflow-hidden group">
+                   <div className="absolute top-0 right-0 w-80 h-80 bg-blue-600 rounded-full blur-[100px] opacity-30 -mr-20 -mt-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+                   
+                   <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3 text-blue-300">
+                          <MapPin size={18} />
+                          <span className="uppercase tracking-wider text-sm font-bold">Destination</span>
+                        </div>
+                        <h2 className="text-5xl font-extrabold mb-4 tracking-tight">{result.destination}</h2>
+                        <div className="flex flex-wrap gap-4 text-sm text-gray-300">
+                          <span className="bg-white/10 px-3 py-1 rounded-full flex items-center gap-2 border border-white/10"><Calendar size={14}/> {result.days} 天行程</span>
+                          <span className="bg-white/10 px-3 py-1 rounded-full flex items-center gap-2 border border-white/10"><Users size={14}/> {result.travelers} 人同行</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-colors">
+                        <div className="flex justify-between items-end mb-3">
+                          <span className="text-gray-300 text-sm font-medium">预估理财收益</span>
+                          <span className="text-3xl font-bold text-yellow-400">+{result.interest} <span className="text-sm font-normal text-yellow-400/80">元</span></span>
+                        </div>
+                        <div className="w-full bg-black/20 h-2 rounded-full mb-4 overflow-hidden">
+                           <div className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full w-3/4 animate-pulse"></div>
+                        </div>
+                        <p className="text-xs text-gray-400 flex items-center gap-1">
+                          <CheckCircle size={12} className="text-green-400"/>
+                          基于“e路同行”专属存款利率估算
+                        </p>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Budget Breakdown */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                   <div className="bg-blue-50 p-6 rounded-3xl text-center border border-blue-100 hover:shadow-lg transition-all hover:-translate-y-1">
+                      <div className="bg-blue-200 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-700">
+                         <Plane size={20}/>
+                      </div>
+                      <p className="text-gray-500 text-xs uppercase mb-2 font-bold tracking-wider">交通预留</p>
+                      <p className="text-2xl font-bold text-gray-900">¥{result.breakdown.transport}</p>
+                   </div>
+                   <div className="bg-purple-50 p-6 rounded-3xl text-center border border-purple-100 hover:shadow-lg transition-all hover:-translate-y-1">
+                      <div className="bg-purple-200 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-purple-700">
+                         <Star size={20}/>
+                      </div>
+                      <p className="text-gray-500 text-xs uppercase mb-2 font-bold tracking-wider">住宿预留</p>
+                      <p className="text-2xl font-bold text-gray-900">¥{result.breakdown.hotel}</p>
+                   </div>
+                   <div className="bg-green-50 p-6 rounded-3xl text-center border border-green-100 hover:shadow-lg transition-all hover:-translate-y-1">
+                      <div className="bg-green-200 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-green-700">
+                         <CreditCard size={20}/>
+                      </div>
+                      <p className="text-gray-500 text-xs uppercase mb-2 font-bold tracking-wider">吃喝玩乐</p>
+                      <p className="text-2xl font-bold text-gray-900">¥{result.breakdown.other}</p>
+                   </div>
+                </div>
+
+                {/* Timeline */}
+                <div className="space-y-8">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                    <h3 className="text-2xl font-bold text-gray-900">每日行程安排</h3>
+                    <button className="text-blue-600 text-sm font-semibold hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                       导出 PDF <ArrowRight size={16}/>
+                    </button>
+                  </div>
+                  
+                  <div className="relative border-l-2 border-dashed border-gray-200 ml-4 space-y-12 pb-4">
+                    {result.schedule.map((day, idx) => (
+                      <div key={idx} className="relative pl-10">
+                        <div className="absolute -left-[11px] top-0 w-6 h-6 rounded-full bg-blue-600 ring-4 ring-white shadow-sm flex items-center justify-center text-[10px] font-bold text-white">
+                           {day.day}
+                        </div>
+                        <h4 className="font-bold text-xl text-gray-900 mb-6">第 {day.day} 天</h4>
+                        
+                        <div className="grid gap-4">
+                           <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-4 md:items-center group">
+                              <span className="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full w-fit uppercase">Morning</span>
+                              <p className="text-gray-700 font-medium group-hover:text-blue-600 transition-colors">{day.morning}</p>
+                           </div>
+                           <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-4 md:items-center group">
+                              <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full w-fit uppercase">Afternoon</span>
+                              <p className="text-gray-700 font-medium group-hover:text-blue-600 transition-colors">{day.afternoon}</p>
+                           </div>
+                           <div className="bg-purple-50 p-5 rounded-2xl border border-purple-100 shadow-sm flex flex-col md:flex-row gap-4 md:items-center">
+                              <span className="bg-purple-200 text-purple-700 text-xs font-bold px-3 py-1 rounded-full w-fit uppercase">Evening</span>
+                              <p className="text-gray-700 font-medium">{day.evening}</p>
+                           </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TeamMember = ({ name, role, school }) => (
+  <div className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-sm border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+    <div className="w-28 h-28 rounded-full bg-blue-50 mb-6 overflow-hidden border-4 border-white shadow-md group-hover:scale-110 transition-transform duration-300">
+      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${name}&backgroundColor=b6e3f4`} alt={name} className="w-full h-full" />
+    </div>
+    <h4 className="font-bold text-xl text-gray-900 group-hover:text-blue-600 transition-colors">{name}</h4>
+    <span className="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide mt-3">{role}</span>
+    <p className="text-gray-500 text-sm mt-4 font-medium">{school}</p>
+  </div>
+);
+
+const Team = () => (
+  <section className="py-24 bg-white relative overflow-hidden">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="text-center mb-16">
+        <h2 className="text-4xl font-extrabold text-gray-900 mb-4">遇见背后的团队</h2>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">来自南京财经大学的跨学科创新力量，致力于用科技重塑旅行体验。</p>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+         <TeamMember name="王绍坤" role="队长" school="金融学院" />
+         <TeamMember name="冯烨敏" role="核心成员" school="经济学院" />
+         <TeamMember name="徐晨" role="核心成员" school="江苏产业发展研究院" />
+         <TeamMember name="王群" role="技术支持" school="计算机与人工智能学院" />
+         <TeamMember name="余青媛" role="核心成员" school="金融学院" />
+         <TeamMember name="冯曦蕾" role="核心成员" school="会计学院" />
+         <TeamMember name="仲晓涵" role="核心成员" school="梅西学院" />
+         <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-300 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer group">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 group-hover:scale-110 transition-transform">
+               <Users className="text-gray-400 group-hover:text-blue-500 transition-colors" size={32}/>
+            </div>
+            <p className="text-gray-500 font-bold group-hover:text-blue-600 transition-colors">期待您的加入</p>
+         </div>
+      </div>
+    </div>
+  </section>
+);
+
+const Partners = () => (
+  <section className="py-20 bg-gray-50 border-t border-gray-200">
+    <div className="max-w-7xl mx-auto px-4 text-center">
+      <p className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em] mb-12">战略合作伙伴 & 生态支持</p>
+      <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-60 grayscale hover:grayscale-0 transition-all duration-700">
+        <div className="flex items-center gap-3 text-2xl font-extrabold text-gray-800 hover:scale-110 transition-transform cursor-pointer"><div className="w-10 h-10 bg-red-600 rounded-full shadow-lg"></div>中国工商银行</div>
+        <div className="flex items-center gap-3 text-2xl font-extrabold text-blue-600 hover:scale-110 transition-transform cursor-pointer"><div className="w-10 h-10 bg-blue-600 rounded-xl shadow-lg"></div>携程旅行</div>
+        <div className="flex items-center gap-3 text-2xl font-extrabold text-orange-500 hover:scale-110 transition-transform cursor-pointer"><div className="w-10 h-10 bg-orange-500 rounded-full shadow-lg"></div>阿里云</div>
+        <div className="flex items-center gap-3 text-2xl font-extrabold text-green-600 hover:scale-110 transition-transform cursor-pointer"><div className="w-10 h-10 bg-green-600 rounded-xl shadow-lg"></div>微信支付</div>
+      </div>
+    </div>
+  </section>
+);
+
+const Footer = () => (
+  <footer className="bg-gray-900 text-white pt-24 pb-12 relative overflow-hidden">
+    {/* Footer Background Pattern */}
+    <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-20">
+        <div className="md:col-span-5">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="bg-gradient-to-tr from-blue-600 to-cyan-500 p-2 rounded-xl">
+              <Plane className="h-6 w-6 text-white" />
+            </div>
+            <span className="font-bold text-3xl tracking-tight">e路同行</span>
+          </div>
+          <p className="text-gray-400 text-base leading-loose mb-8 max-w-sm">
+            基于“金融+AI”的一站式旅行规划智能平台。我们致力于通过技术创新，让每一笔旅行预算都能创造最大价值。
+          </p>
+          <div className="flex gap-4">
+             <button className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-blue-600 hover:border-blue-600 hover:scale-110 transition-all">
+               <Globe size={20} />
+             </button>
+             <button className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-blue-600 hover:border-blue-600 hover:scale-110 transition-all">
+               <Smartphone size={20} />
+             </button>
+          </div>
+        </div>
+        
+        <div className="md:col-span-2">
+          <h4 className="font-bold text-lg mb-8 text-white">产品服务</h4>
+          <ul className="space-y-4 text-gray-400 text-sm">
+            <li><a href="#" className="hover:text-blue-400 hover:pl-1 transition-all">智能规划</a></li>
+            <li><a href="#" className="hover:text-blue-400 hover:pl-1 transition-all">存款理财</a></li>
+            <li><a href="#" className="hover:text-blue-400 hover:pl-1 transition-all">消费监督</a></li>
+            <li><a href="#" className="hover:text-blue-400 hover:pl-1 transition-all">企业版</a></li>
+          </ul>
+        </div>
+        
+        <div className="md:col-span-2">
+          <h4 className="font-bold text-lg mb-8 text-white">关于我们</h4>
+          <ul className="space-y-4 text-gray-400 text-sm">
+            <li><a href="#" className="hover:text-blue-400 hover:pl-1 transition-all">团队介绍</a></li>
+            <li><a href="#" className="hover:text-blue-400 hover:pl-1 transition-all">发展历程</a></li>
+            <li><a href="#" className="hover:text-blue-400 hover:pl-1 transition-all">联系我们</a></li>
+            <li><a href="#" className="hover:text-blue-400 hover:pl-1 transition-all">加入我们</a></li>
+          </ul>
+        </div>
+
+        <div className="md:col-span-3">
+          <h4 className="font-bold text-lg mb-8 text-white">订阅动态</h4>
+          <p className="text-gray-400 text-sm mb-6">获取最新的旅行优惠与理财资讯</p>
+          <div className="flex gap-2">
+             <input type="email" placeholder="您的邮箱地址" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white w-full focus:outline-none focus:border-blue-500 focus:bg-white/10 transition-all" />
+             <button className="bg-blue-600 px-4 py-3 rounded-xl hover:bg-blue-700 transition-all hover:scale-105 shadow-lg shadow-blue-900/50">
+               <ArrowRight size={20} />
+             </button>
+          </div>
+        </div>
+      </div>
+      
+      <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-500">
+        <div>&copy; 2024 e路同行团队 (南京财经大学). All rights reserved.</div>
+        <div className="flex gap-8">
+           <a href="#" className="hover:text-gray-300 transition-colors">隐私政策</a>
+           <a href="#" className="hover:text-gray-300 transition-colors">服务条款</a>
+           <a href="#" className="hover:text-gray-300 transition-colors">Cookie设置</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+);
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('home');
+
+  // 当切换 Tab 时，自动滚动到顶部
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeTab]);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return (
+          <div className="animate-fade-in">
+            <HeroCarousel onStart={() => setActiveTab('planner')} />
+            <MarketStats />
+            <Destinations />
+            <FAQ />
+            <div className="bg-gradient-to-br from-blue-900 to-indigo-900 py-24 relative overflow-hidden text-white">
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+              <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+                 <h2 className="text-4xl font-extrabold mb-6">准备好开始您的智慧旅程了吗？</h2>
+                 <p className="text-blue-200 text-xl mb-10">只需几步，AI 将为您生成包含预算增值方案的完美行程。</p>
+                 <button onClick={() => setActiveTab('planner')} className="bg-white text-blue-900 px-10 py-5 rounded-full text-lg font-bold hover:bg-blue-50 transition-all shadow-2xl hover:scale-105 active:scale-95">
+                   免费创建行程
+                 </button>
+              </div>
+            </div>
+            <Partners />
+          </div>
+        );
+      case 'planner':
+        return <Planner />;
+      case 'tech':
+        return <TechStack />;
+      case 'team':
+        return <Team />;
+      default:
+        return <HeroCarousel onStart={() => setActiveTab('planner')} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white font-sans text-gray-900 selection:bg-blue-500 selection:text-white">
+      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <main>
+        {renderContent()}
+      </main>
+      <Footer />
+      <BackToTop />
+    </div>
+  );
+};
+
+export default App;
